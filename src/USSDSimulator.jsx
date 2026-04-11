@@ -1,111 +1,23 @@
 import { useState, useCallback } from "react";
 import { theme } from "./theme.js";
+import { MENU } from "./menuDesign.js";
 
 const { colors: C, font: F, spacing: S, layout: L, motion: M, safe: SA } = theme;
 
-// ─── USSD Menu Tree ───────────────────────────────────────────────────────────
-const USSD_MENU_TREE = {
-  id: "root",
-  display: "Welcome to Telkom Mobile\n\nSelect an option:",
-  options: [
-    {
-      key: "1", label: "Buy Airtime", id: "buy_airtime",
-      display: "Buy Airtime\n\nSelect amount:",
-      options: [
-        {
-          key: "1", label: "R5", id: "airtime_5",
-          display: "You are about to buy R5 airtime.\n\n1. Confirm\n2. Cancel",
-          options: [
-            { key: "1", label: "Confirm", id: "airtime_5_ok",     display: "R5 airtime purchased.\n\nNew balance: R23.50\n\n0. Main Menu", isEnd: true },
-            { key: "2", label: "Cancel",  id: "airtime_5_cancel", display: "Transaction cancelled.\n\n0. Main Menu", isEnd: true },
-          ],
-        },
-        {
-          key: "2", label: "R10", id: "airtime_10",
-          display: "You are about to buy R10 airtime.\n\n1. Confirm\n2. Cancel",
-          options: [
-            { key: "1", label: "Confirm", id: "airtime_10_ok",     display: "R10 airtime purchased.\n\nNew balance: R18.50\n\n0. Main Menu", isEnd: true },
-            { key: "2", label: "Cancel",  id: "airtime_10_cancel", display: "Transaction cancelled.\n\n0. Main Menu", isEnd: true },
-          ],
-        },
-        {
-          key: "3", label: "R30", id: "airtime_30",
-          display: "You are about to buy R30 airtime.\n\n1. Confirm\n2. Cancel",
-          options: [
-            { key: "1", label: "Confirm", id: "airtime_30_ok",     display: "R30 airtime purchased.\n\nNew balance: -R1.50\n\n0. Main Menu", isEnd: true },
-            { key: "2", label: "Cancel",  id: "airtime_30_cancel", display: "Transaction cancelled.\n\n0. Main Menu", isEnd: true },
-          ],
-        },
-      ],
-    },
-    {
-      key: "2", label: "Buy Data Bundles", id: "buy_data",
-      display: "Buy Data Bundles\n\nSelect bundle:",
-      options: [
-        {
-          key: "1", label: "Daily 100MB - R12", id: "data_daily",
-          display: "Daily Bundle: 100MB for R12\nValid for 24 hours\n\n1. Confirm\n2. Cancel",
-          options: [
-            { key: "1", label: "Confirm", id: "data_daily_ok",     display: "100MB Daily bundle activated.\n\nExpires: Tomorrow\n\n0. Main Menu", isEnd: true },
-            { key: "2", label: "Cancel",  id: "data_daily_cancel", display: "Transaction cancelled.\n\n0. Main Menu", isEnd: true },
-          ],
-        },
-        {
-          key: "2", label: "Weekly 500MB - R29", id: "data_weekly",
-          display: "Weekly Bundle: 500MB for R29\nValid for 7 days\n\n1. Confirm\n2. Cancel",
-          options: [
-            { key: "1", label: "Confirm", id: "data_weekly_ok",     display: "500MB Weekly bundle activated.\n\nExpires: 7 days\n\n0. Main Menu", isEnd: true },
-            { key: "2", label: "Cancel",  id: "data_weekly_cancel", display: "Transaction cancelled.\n\n0. Main Menu", isEnd: true },
-          ],
-        },
-        {
-          key: "3", label: "Monthly 1GB - R99", id: "data_monthly",
-          display: "Monthly Bundle: 1GB for R99\nValid for 30 days\n\n1. Confirm\n2. Cancel",
-          options: [
-            { key: "1", label: "Confirm", id: "data_monthly_ok",     display: "1GB Monthly bundle activated.\n\nExpires: 30 days\n\n0. Main Menu", isEnd: true },
-            { key: "2", label: "Cancel",  id: "data_monthly_cancel", display: "Transaction cancelled.\n\n0. Main Menu", isEnd: true },
-          ],
-        },
-      ],
-    },
-    {
-      key: "3", label: "Check Balance", id: "check_balance",
-      display: "Your Balance:\n\nAirtime: R28.50\nData: 245MB (expires 15 Apr)\nSMS: 12 remaining\n\n0. Main Menu",
-      isEnd: true, options: [],
-    },
-    {
-      key: "4", label: "Transfer Airtime", id: "transfer_input",
-      display: "Transfer Airtime\n\nEnter recipient number:",
-      isInput: true, inputLabel: "Recipient number",
-      options: [
-        {
-          key: "__input__", label: "Enter amount", id: "transfer_amount",
-          display: "Enter amount to transfer (Rands):",
-          isInput: true, inputLabel: "Amount (R)",
-          options: [
-            {
-              key: "__input__", label: "Confirm", id: "transfer_confirm",
-              display: "Confirm transfer?\n\n1. Yes\n2. No",
-              options: [
-                { key: "1", label: "Yes", id: "transfer_ok", display: "Transfer successful.\n\n0. Main Menu", isEnd: true },
-                { key: "2", label: "No",  id: "transfer_no", display: "Transfer cancelled.\n\n0. Main Menu", isEnd: true },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      key: "5", label: "FreeMe Plans", id: "freeme",
-      display: "FreeMe Plans\n\nSelect a plan:",
-      options: [
-        { key: "1", label: "FreeMe 1GB - R99/mo",    id: "freeme1", display: "FreeMe 1GB\nR99/month\nIncludes: 1GB data, 50 mins\n\nDial *180# to subscribe\n\n0. Main Menu", isEnd: true },
-        { key: "2", label: "FreeMe 2.5GB - R149/mo", id: "freeme2", display: "FreeMe 2.5GB\nR149/month\nIncludes: 2.5GB data, 100 mins\n\nDial *180# to subscribe\n\n0. Main Menu", isEnd: true },
-        { key: "3", label: "FreeMe 5GB - R249/mo",   id: "freeme3", display: "FreeMe 5GB\nR249/month\nIncludes: 5GB data, 200 mins\n\nDial *180# to subscribe\n\n0. Main Menu", isEnd: true },
-      ],
-    },
-  ],
-};
+// ─── Adapt menuDesign nodes to the engine's expected shape ────────────────────
+// menuDesign uses `question` for the screen text.
+// The engine uses `display` internally. This adapter keeps both files clean
+// without coupling the design file to engine internals.
+function adapt(node) {
+  if (!node) return node;
+  return {
+    ...node,
+    display: node.question ?? node.display ?? "",
+    options: (node.options || []).map(adapt),
+  };
+}
+
+const USSD_MENU_TREE = adapt(MENU);
 
 // ─── App screens ──────────────────────────────────────────────────────────────
 // idle        → home dial screen
