@@ -4,20 +4,27 @@ import { MENU } from "./menuDesign.js";
 
 const { colors: C, font: F, spacing: S, layout: L, motion: M, safe: SA } = theme;
 
-// ─── Adapt menuDesign nodes to the engine's expected shape ────────────────────
-// menuDesign uses `question` for the screen text.
-// The engine uses `display` internally. This adapter keeps both files clean
-// without coupling the design file to engine internals.
-function adapt(node) {
-  if (!node) return node;
+// ─── Tree builder ─────────────────────────────────────────────────────────────
+// Recursively processes the raw design tree:
+//   • Auto-generates `id` from tree path  (root → root_1 → root_1_2 → ...)
+//   • Renames `question` → `display` so the engine stays decoupled from the
+//     design file's field names
+// Devs never touch IDs — position in the tree makes each node unique.
+function buildTree(node, parentId = "root") {
+  const id = parentId;
+  const children = (node.options || []).map((child) => {
+    const childId = `${id}_${child.key}`;
+    return buildTree(child, childId);
+  });
   return {
     ...node,
-    display: node.question ?? node.display ?? "",
-    options: (node.options || []).map(adapt),
+    id,
+    display: node.question ?? "",
+    options: children,
   };
 }
 
-const USSD_MENU_TREE = adapt(MENU);
+const USSD_MENU_TREE = buildTree(MENU);
 
 // ─── App screens ──────────────────────────────────────────────────────────────
 // idle        → home dial screen
