@@ -1,35 +1,113 @@
-# USSD Simulator
+# OUTLAWS — A USSD Interactive Fiction Game
 
-An interactive, mobile-first Progressive Web App that simulates how USSD (Unstructured Supplementary Service Data) menu systems work on real mobile handsets. Built with a faithful phone-dialer UX — all input is through a numeric keypad, screen states switch as they do on a real device.
+A branching narrative game played entirely through a USSD interface simulation. Every choice is a number. Every screen is text. No graphics, no sound — just words on a phone screen and the weight of decisions.
 
----
-
-## What is USSD?
-
-USSD is a real-time session-based protocol used by mobile networks to deliver interactive menu-driven services — balance checks, airtime purchases, data bundles, transfers — all without internet access. When you dial `*123#` on a phone, a session opens between your handset and the carrier's application server. The server responds with a text menu; you reply with a number; the server traverses its menu tree and returns the next screen. The session closes when you reach a terminal node or time out.
-
-This app simulates that full cycle, client-side, with a Telkom Mobile menu tree as the demo dataset.
+Built on the USSD Simulator engine. Inspired by Lupe Fiasco's *The Cool* and the Outlaws series.
 
 ---
 
-## Live Demo
+## The Story
 
-> Deploy to Vercel or Netlify — see [Deployment](#deployment) below.
+**Bergville is burning.**
+
+Tlali has taken Nolwandle — your pregnant wife. He wants cattle. All of them.
+
+You are Bandile Khumalo. You have three paths. None of them are clean.
 
 ---
 
-## Features
+## How to Play
 
-- Full numeric keypad dial screen — type `*123#` to start, just like a real phone
-- Three distinct screen states: **Idle → Viewing → Inputting** (no hybrid layouts)
-- Authentic USSD menu tree traversal with back-navigation and session end
-- Free-text input nodes (e.g. phone number / amount entry for airtime transfer)
-- PWA installable on Android and iOS — launches full-screen from home screen
-- Fully offline after first load (Workbox service worker, 12+ assets precached)
-- Central design token file — change any colour, font, size, or spacing in one place
-- iOS dark mode colour system throughout
-- Safe-area aware layout (notch, Dynamic Island, home indicator)
-- No rubber-band overscroll, no tap highlight flash, no accidental text selection
+Dial `*123#` on the home screen to begin.
+
+All input is through the numeric keypad — exactly as a real USSD session works on a phone. Press a number to choose. Press `0` to return to the main menu at any point.
+
+There is no right answer. There are only consequences.
+
+---
+
+## The Three Acts
+
+### ACT I — Rally the Bandits
+Call the old crew. Storm Tlali's compound. Take Nolwandle by force.
+
+But Nyakallo is inside. And Nyakallo has his own agenda.
+
+> No matter how you attack — dawn raid, night breach, siege, negotiation — Nyakallo gets to her first. The bandits win the battle. Bandile loses everything.
+
+### ACT II — Meet the Demand
+Pay the cattle. Trust the deal. Bring Nolwandle home.
+
+Go alone, go with backup, go with the cops. Every path reaches the same road out of Tlali's territory.
+
+> There is a sniper on the ridge. The deal was never real. The exchange happens — then a single shot ends it. Tlali always planned to keep both.
+
+### ACT III — The Cool (You Died)
+You step outside. Someone calls your name. You turn.
+
+The bullet hits before you hear the gun.
+
+Three days after your funeral, the soil cracks.
+
+> **This is the only act where Nolwandle can survive.** Death gave Bandile something the living don't have. The question is what he does with it.
+
+---
+
+## Endings
+
+There are **19 endings** across the three acts.
+
+| Act | Paths | Nolwandle Survives? |
+|---|---|---|
+| Rally the Bandits | 6 endings | Never |
+| Meet the Demand | 7 endings | Never |
+| The Cool | 6 endings (flesh) + 6 endings (ghost) | Yes — if you make it here |
+
+**The Cool** splits into two branches:
+- **Return as Flesh** — Bandile rises bodily. Rally the crew or walk to Tlali alone.
+- **Return as Ghost** — No body. Only presence. Haunt Tlali, possess Sbu, or visit Nolwandle in her cell.
+
+The ghost paths are the richest. Particularly *Visit Nolwandle → Try to untie her* — the only ending where Bandile spends the last of himself to free her and disappears completely.
+
+---
+
+## Architecture
+
+This game runs on the USSD Simulator engine — a three-state finite state machine built in React.
+
+```
+IDLE (dial screen)
+  └─► VIEWING (USSD text — the story)
+        └─► INPUTTING (keypad — your choice)
+              └─► VIEWING (next node)
+```
+
+### Content / Engine Separation
+
+All narrative content lives in [`src/menuDesign.js`](src/menuDesign.js). The engine in [`src/USSDSimulator.jsx`](src/USSDSimulator.jsx) never needs to change for new content.
+
+```
+src/
+├── menuDesign.js       ← Story content only. Edit this to change the game.
+├── USSDSimulator.jsx   ← Engine. State machine, traversal, rendering.
+└── theme.js            ← All visual tokens. Colors, fonts, spacing.
+```
+
+### Node Structure
+
+```js
+{
+  key:        "1",              // digit pressed to reach this node
+  label:      "Rally the bandits",  // short text in parent option list
+  question:   "You make the calls...",  // full screen text
+  options:    [ ... ],          // child nodes
+  isEnd:      true,             // optional — terminal screen
+  isInput:    true,             // optional — free text entry
+  inputLabel: "Enter amount"    // optional — shown above keypad
+}
+```
+
+Node IDs are auto-generated from tree position (`root_1_2_1`). No manual ID management required.
 
 ---
 
@@ -40,239 +118,57 @@ This app simulates that full cycle, client-side, with a Telkom Mobile menu tree 
 | Framework | React 18 |
 | Bundler | Vite 5 |
 | PWA | vite-plugin-pwa + Workbox |
-| Icon generation | sharp |
-| UI font | Electrolize (Google Fonts) |
-| Screen font | Electrolize (swappable via `theme.js`) |
-| Styling | Inline styles driven by design tokens |
-| Deployment target | Vercel / Netlify (static) |
+| Styling | Inline styles — design tokens via `theme.js` |
+| Font (UI) | CirclePixels (local) |
+| Font (screen) | Electrolize (Google Fonts) |
+| Deployment | Vercel / Netlify (static) |
 | Runtime | Browser — no backend, no API |
-
----
-
-## Architecture
-
-### Screen State Machine
-
-The app runs as a three-state finite state machine. Each state renders a completely different full-screen view — no split layouts.
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    App State Machine                    │
-│                                                         │
-│   ┌──────────┐   dial *123#   ┌──────────────┐         │
-│   │          │ ─────────────► │              │         │
-│   │   IDLE   │                │   VIEWING    │         │
-│   │          │ ◄───────────── │  (menu text) │         │
-│   └──────────┘   End Call     │              │         │
-│                               └──────┬───────┘         │
-│                                      │ tap Reply        │
-│                               ┌──────▼───────┐         │
-│                               │              │         │
-│                               │  INPUTTING   │         │
-│                               │  (keypad)    │         │
-│                               │              │         │
-│                               └──────┬───────┘         │
-│                                      │ press Send       │
-│                               ┌──────▼───────┐         │
-│                               │  navigate()  │         │
-│                               │  traverses   │         │
-│                               │  menu tree   │         │
-│                               └──────┬───────┘         │
-│                                      │                  │
-│                               back to VIEWING           │
-└─────────────────────────────────────────────────────────┘
-```
-
-### USSD Menu Tree (Data Structure)
-
-The menu is a recursive tree of nodes. Each node describes one screen of content.
-
-```
-MenuNode {
-  id:         string          — unique identifier
-  display:    string          — text shown on screen (\n for line breaks)
-  options:    MenuNode[]      — child nodes keyed by digit pressed
-  key:        string          — digit that selects this node from parent
-  label:      string          — short description (for parent option list)
-  isEnd?:     boolean         — terminal node (no further input expected)
-  isInput?:   boolean         — free-text entry node (phone number, amount)
-  inputLabel? string          — label shown above keypad in input mode
-}
-```
-
-Navigation:
-- Digit input → `options.find(o => o.key === input)` → render child node
-- `"0"` always resets to root
-- `isInput` nodes capture free text and pass it to the first child
-- `isEnd` nodes show result text; only Back and End Call are available
-
-### Component Tree
-
-```
-App
-└── USSDSimulator
-    ├── [IDLE]      DialScreen
-    │                ├── Key (×12)          — numeric keypad buttons
-    │                └── Call button        — green circle, activates on input
-    │
-    ├── [VIEWING]   MenuView
-    │                ├── Header bar         — *123# | TELKOM MOBILE
-    │                ├── Screen content     — USSD text, vertically centred
-    │                └── Action bar         — Back · Reply · End
-    │
-    └── [INPUTTING] DialScreen
-                     ├── Back to menu link
-                     ├── Key (×12)
-                     └── Send button        — green circle, activates on input
-```
-
-### File Structure
-
-```
-USSD-Simulator/
-│
-├── index.html                  # Entry point — viewport, PWA meta, font import, global CSS
-├── vite.config.js              # Vite + React plugin + PWA manifest + Workbox config
-├── package.json
-├── package-lock.json
-├── generate-icons.mjs          # Generates icon-192.png / icon-512.png via sharp
-├── .gitignore
-│
-├── public/
-│   ├── fonts/
-│   │   └── CirclePixels.ttf    # Local font (optional UI font)
-│   └── icons/
-│       ├── icon-192.png        # PWA home screen icon
-│       ├── icon-192.svg
-│       ├── icon-512.png        # PWA splash / store icon
-│       └── icon-512.svg
-│
-└── src/
-    ├── main.jsx                # React root mount + font CSS import
-    ├── App.jsx                 # Thin wrapper — renders USSDSimulator
-    ├── fonts.css               # @font-face for CirclePixels
-    ├── theme.js                # ★ Central design token file (colours, fonts, spacing, layout)
-    └── USSDSimulator.jsx       # All app logic and UI — state machine, menu tree, components
-```
-
----
-
-## Design Token System
-
-All visual properties live in [`src/theme.js`](src/theme.js). No styles are hardcoded in components — every value references a token.
-
-```
-theme
-├── colors          — bg, text hierarchy, iOS tints (green/red/blue), key buttons, header
-├── font            — family (UI), familyScreen (content), sizes, weights, line height
-├── spacing         — padH, padV, gap, keyGap
-├── layout          — maxWidth, key/button sizes, radii, input heights
-├── safe            — env(safe-area-inset-*) tokens for notch/home indicator
-└── motion          — screenFade, keyPress transitions
-```
-
-To change any aspect of the UI, edit `theme.js` only. The font section includes commented-out alternatives for easy swapping:
-
-```js
-// UI font (buttons, labels, keys)
-family: "'Electrolize', sans-serif",
-// family: "'CirclePixels', sans-serif",
-// family: "-apple-system, BlinkMacSystemFont, ...",
-
-// Screen text font (USSD content)
-familyScreen: "'Electrolize', sans-serif",
-// familyScreen: "'Courier New', Courier, monospace",
-```
-
----
-
-## PWA Configuration
-
-Configured in `vite.config.js` via `vite-plugin-pwa`:
-
-| Setting | Value |
-|---|---|
-| `display` | `standalone` — no browser chrome when launched from home screen |
-| `orientation` | `portrait` |
-| `theme_color` | `#000000` |
-| `background_color` | `#000000` |
-| `registerType` | `autoUpdate` — silently updates service worker |
-| Precached assets | All JS, CSS, HTML, PNG, SVG (12+ entries, ~170KB) |
-| Google Fonts cache | CacheFirst, 1 year TTL |
-
-**Installing on Android:** Chrome shows an "Add to Home Screen" banner automatically.  
-**Installing on iOS:** Safari → Share → Add to Home Screen.
-
-Once installed, the app opens full-screen with no browser UI, works offline, and behaves identically to a native app.
 
 ---
 
 ## Getting Started
 
 ```bash
-# Clone
 git clone https://github.com/Passopla/USSD-Simulator.git
 cd USSD-Simulator
-
-# Install
+git checkout game
 npm install
-
-# Dev server (hot reload)
 npm run dev
-
-# Production build
-npm run build
-
-# Preview production build locally
-npm run preview
 ```
 
-> Node 18+ required.
+Dial `*123#` to start.
 
 ---
 
-## Customising the Menu Tree
+## Writing Your Own Game
 
-The entire USSD menu is defined as a JavaScript object in `USSDSimulator.jsx` — `USSD_MENU_TREE`. To build your own service:
+1. Open [`src/menuDesign.js`](src/menuDesign.js)
+2. Replace the `MENU` object with your own tree
+3. Each node needs at minimum: `question`, `key`, `label`, `options[]`
+4. Add `isEnd: true` to terminal nodes
+5. The engine handles everything else — traversal, back navigation, IDs, rendering
 
-1. Replace the tree with your own nodes
-2. Each node needs at minimum: `id`, `display`, `options[]`
-3. Add `isEnd: true` to terminal nodes
-4. Add `isInput: true` + `inputLabel` to free-text entry nodes
-5. The `navigate()` function handles traversal automatically
-
-No backend required — the simulator runs the full state machine in the browser.
+No backend. No database. The entire game runs client-side.
 
 ---
 
-## Deployment
+## PWA
 
-This is a fully static build. Any static host works.
+Install on Android: Chrome shows an "Add to Home Screen" prompt automatically.
+Install on iOS: Safari → Share → Add to Home Screen.
 
-**Vercel (recommended)**
-```bash
-npm i -g vercel
-vercel --prod
-```
-
-**Netlify**
-```bash
-npm run build
-# Drag the dist/ folder into Netlify's deploy UI
-```
-
-HTTPS is required for the PWA service worker to activate. Both Vercel and Netlify provide this automatically.
+Once installed, the app opens full-screen and works offline. It behaves identically to a native app — because the experience *is* the point.
 
 ---
 
-## Roadmap
+## Branch Notes
 
-- [ ] Phase 4 — Deploy to Vercel with custom domain
-- [ ] Configurable menu tree loaded from JSON
-- [ ] Session timeout simulation (60s countdown)
-- [ ] Multiple carrier themes (MTN, Vodacom, Cell C)
-- [ ] Haptic feedback on keypress (Vibration API)
-- [ ] Sound effects (DTMF tones on keypress)
+This is the `game` branch. The `main` branch contains the original Telkom Mobile USSD simulator demo.
+
+| Branch | Contents |
+|---|---|
+| `main` | USSD simulator with Telkom Mobile menu demo |
+| `game` | OUTLAWS interactive fiction game |
 
 ---
 
