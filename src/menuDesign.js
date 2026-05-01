@@ -22,7 +22,7 @@ export const MENU = {
   // ══════════════════════════════════════════════════════════════
   //  ACT I — THE DEMAND
   // ══════════════════════════════════════════════════════════════
-  question: "OUTLAWS\n\nBergville is burning.\nTlali has taken Nolwandle.\nShe is pregnant.\n\nWhat do you do?",
+  question: "OUTLAWS\n\nBergville is angry.\nTlali has taken your wife,\nNolwandle, along with other hostages from the village.\n\nWhat do you do?",
   options: [
 
     // ────────────────────────────────────────────────────────────
@@ -32,35 +32,35 @@ export const MENU = {
     // ────────────────────────────────────────────────────────────
     {
       key: "1",
-      label: "Rally the bandits",
-      question: "You make the calls.\nThe old crew answers.\n\nBergville boys. Armed. Ready.\nNo negotiations. No cattle.\nJust war.",
+      label: "Round up amadoda",
+      question: "You make the calls.\nAmadoda answer.\n\niBergville yonke. Armed. Ready.\nNo negotiations. No cows.\nJust another Zulu Sotho war.",
       options: [
         {
           key: "1",
-          label: "Storm at dawn",
-          question: "4AM. The compound is quiet.\n\nYour crew moves through the dark.\nTlali's guards are sleeping.\nYou have the element of surprise.",
+          label: "Trek the mountains at dawn",
+          question: "4AM. The compound is quiet.\nYour crew moves through the dark.\nTlali's guards are sleeping.\nYou strike with the element of surprise.",
           options: [
             {
               key: "1",
               label: "Hit them hard",
-              question: "Gunfire tears through the silence.\n\nTlali's men scramble.\nYour boys are relentless.\nOne by one, the guards fall.\n\nTlali runs for the back exit.",
+              question: "Gunfire tears through the silence.\nTlali's gang of youth scramble.\nYour men are relentless.\nOne by one, the guards fall.\n\nTlali runs for the back of the compound.",
               options: [
                 {
                   key: "1",
                   label: "Chase Tlali",
-                  question: "You chase him through the veld.\n\nHe stumbles. You catch him.\nHe's on his knees.\n\n\"She's inside,\" he says.\n\"Go get her.\"",
+                  question: "You chase him through the veld.\nHe hides. You find him.\nHe's beggingon his knees.\n\n\"She's inside,\" he says.\n\"Go get her.\"",
                   options: [
                     {
                       key: "1",
                       label: "Go inside",
-                      question: "You run back to the compound.\n\nThe door is open.\nThe room is empty.\nBlood on the floor.\n\nNyakallo stands in the corner.\nThe knife is still in her hand.\n\nNolwandle is gone.\n\nWhile you were chasing Tlali,\nNyakallo finished what he started.",
+                      question: "You run back to the compound.\nThe door is open.\nThe room is empty.\nBlood on the floor.\n\nNyakallo, Tlali's wife, stands in the corner.\nThe knife is still in her hand.\n\nNolwandle is gone.\n\nWhile you were chasing Tlali,\nNyakallo finished what he started.",
                       isEnd: true,
                       options: [],
                     },
                     {
                       key: "2",
                       label: "Finish Tlali first",
-                      question: "You pull the trigger.\n\nTlali drops.\n\nBut when you get back inside...\nNyakallo is gone.\nNolwandle lies on the floor.\n\nShe was dead before\nyou even caught him.\n\nYou won the battle.\nYou lost everything.",
+                      question: "You pull the trigger.\nTlali drops.\n\nBut when you get back inside...\nNyakallo is gone.\nNolwandle lies on the floor.\n\nShe was dead before\nyou even caught him.\n\nYou won the battle.\nBut you lost everything.",
                       isEnd: true,
                       options: [],
                     },
@@ -69,7 +69,7 @@ export const MENU = {
                 {
                   key: "2",
                   label: "Let him run, find Nolwandle",
-                  question: "You ignore Tlali.\nNolwandle first. Always.\n\nYou kick through every door.\nThe last room.\n\nNyakallo is standing over her.\nIt's already done.\n\n\"She knew too much,\" he says.\n\nYou were too late.\nEven when you chose right.",
+                  question: "You ignore Tlali.\nNolwandle first. Always.\n\nYou kick through every door.\nThe last room.\n\nNyakallo is standing over her.\nIt's already done.\n\n\"You stupid Zulu fool.\"\n\"You should've just brought the cows.\"\n\nYour heart shatters then you send Nyakallo to the hell. You won the battle.\nBut you lost everything.",
                   isEnd: true,
                   options: [],
                 },
